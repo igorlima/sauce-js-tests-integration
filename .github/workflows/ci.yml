@@ -5,24 +5,67 @@ on:
     branches:
       - master
   pull_request:
+  workflow_dispatch:
 
 jobs:
   test:
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [ubuntu-latest]
-        node: [8, 10]
+        name:
+          - Node 8
+          - Node 10
+          - Node 12
+          - Node 14
+          - Node 16
+          - Node 18
+          - Node 20
+          - Node 22
+
+        include:
+        - name: Node 8
+          node-version: 8
+          npm-i: mocha@7.2.0
+
+        - name: Node 10
+          node-version: 10
+          npm-i: mocha@8.4.0
+
+        - name: Node 12
+          node-version: 12"
+          npm-i: mocha@9.2.2
+
+        - name: Node 14
+          node-version: 14
+
+        - name: Node 16
+          node-version: 16
+
+        - name: Node 18
+          node-version: 18
+
+        - name: Node 20
+          node-version: 20
+
+        - name: Node 22
+          node-version: 22
+
       max-parallel: 1
       fail-fast: true
 
-    runs-on: ${{ matrix.os }}
-
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node }}
-      - run: npm ci
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: package.json
+
+      - run: npm i
+      
+      - run: npm install --save-dev ${{ matrix.npm-i }}
+        if: matrix.npm-i != ''
+      
       - run: npm test
         env:
           SAUCE_USERNAME: ember-cli-sauce-ci
